@@ -1,3 +1,10 @@
+
+/*******************************************************************************
+ * Copyright (c) 2021, Ignacio Castillo.
+ * ________________________________________
+ * Created at: 1/30/21, 8:22 PM
+ ******************************************************************************/
+
 package cinvestav
 import cinvestav.crypto.hashfunction.HashFunctionAlgorithm
 import cinvestav.crypto.hashfunction.HashFunctionAlgorithm.HashFunctionAlgorithm
@@ -23,7 +30,10 @@ object HashFunctionsApp extends IOApp {
 
   def program(algorithm: HashFunctionAlgorithm)(implicit FI:FilesOps[IO], HF:HashFunctions[IO]): IO[ExitCode] =  {
     val app = ConfigSource.default.load[DefaultConfig]
-      .flatMap(x=>FI.digest(x.dirPath,algorithm).asRight)
+//      .flatMap(x=>FI.digest(x.dirPath,algorithm).asRight)
+      .flatMap(_=>HF.digest("HOLA ".getBytes,algorithm).asRight)
+//      .map(x=>L)
+
 //      .flatMap(config=>FI.cleanDirectory(config.dirPath).asRight)
 //        .flatMap(config=>FI.replicateFilesN(s"${config.dirPath}/${config.filenameGenesis}",config.dirPath,1500).asRight)
 

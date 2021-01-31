@@ -24,7 +24,7 @@ object HMACApp extends IOApp{
       .flatMap{ config =>
          H.generateKey(keyGeneratorAlgorithm).flatMap{ key =>
            val f = (U.bytesToHexString _).pure[IO]
-           FO.digestP(config.dirPath,H.digestFile(hMACAlgorithm,key,f))
+           FO.digestN(config.dirPath,H.digestFile(hMACAlgorithm,key,f))
          }.asRight
 
       }
