@@ -1,6 +1,6 @@
 import cats.effect.IO
-import cinvestav.crypto.hashfunction.HashFunctionAlgorithm
-import cinvestav.crypto.hashfunction.HashFunctionAlgorithm.{HashFunctionAlgorithm, SHA1, SHA256, SHA384, SHA512}
+import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms.{MessageDigestAlgorithms, SHA1, SHA256, SHA384, SHA512}
+import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms
 import org.scalameter.api._
 import org.scalameter.picklers.Pickler
 import org.scalameter.picklers.noPickler.instance
@@ -12,10 +12,10 @@ object Testing extends  Bench.OfflineReport{
 
 //  val generator: Gen[Int] = Gen.range("algorithms")(0,3,1)
 
-  val gen00: Gen[HashFunctionAlgorithm] =  Gen.single("SHA-1")(HashFunctionAlgorithm.SHA1)
-  val gen01: Gen[HashFunctionAlgorithm] = Gen.single("SHA-256")(HashFunctionAlgorithm.SHA256)
-  val gen02: Gen[HashFunctionAlgorithm] = Gen.single("SHA-384")(HashFunctionAlgorithm.SHA384)
-  val gen03: Gen[HashFunctionAlgorithm] = Gen.single("SHA-512")(HashFunctionAlgorithm.SHA512)
+  val gen00: Gen[MessageDigestAlgorithms] =  Gen.single("SHA-1")(MessageDigestAlgorithms.SHA1)
+  val gen01: Gen[MessageDigestAlgorithms] = Gen.single("SHA-256")(MessageDigestAlgorithms.SHA256)
+  val gen02: Gen[MessageDigestAlgorithms] = Gen.single("SHA-384")(MessageDigestAlgorithms.SHA384)
+  val gen03: Gen[MessageDigestAlgorithms] = Gen.single("SHA-512")(MessageDigestAlgorithms.SHA512)
   override def persistor = new SerializationPersistor("target/results")
 
   override def reporter: Reporter[Double] = Reporter.Composite(

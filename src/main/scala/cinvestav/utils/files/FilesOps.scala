@@ -1,7 +1,7 @@
 package cinvestav.utils.files
 
 import cats.effect.{Blocker, ContextShift, IO, Timer}
-import cinvestav.crypto.hashfunction.HashFunctionAlgorithm.HashFunctionAlgorithm
+import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms.MessageDigestAlgorithms
 import cinvestav.utils.Utils
 import fs2.io.file.{copy, deleteIfExists, directoryStream}
 import java.nio.file.{Files, Paths}
@@ -9,6 +9,7 @@ import cinvestav.crypto.hashfunction.HashFunctions
 import cinvestav.crypto.hashfunction.HashFunctionsInterpreter.hashFunctionAlgorithmIO
 import cinvestav.utils.UtilsInterpreter.utilsIO
 import fs2.{Pipe, Stream}
+//import fs2.io.readInputStream
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import scala.language.postfixOps
@@ -22,7 +23,7 @@ trait FilesOps[F[_]]{
 //  Convert all the files in the directory into a Stream of Array[Byte]
   def directoryToBytes(blocker: Blocker,path:String):Stream[F,Array[Byte]]
 // Apply a hash function on a file
-  def digest(path:String, algorithm: HashFunctionAlgorithm): F[Unit]
+  def digest(path:String, algorithm: MessageDigestAlgorithms): F[Unit]
 //  Apply a hash function to all files in a directory
   def digestN[A](path:String, p:Pipe[IO,Array[Byte],A]):F[Unit]
 //  Remove all the files in a directory
@@ -55,7 +56,7 @@ object FilesOpsInterpreter {
       }
     }
 
-    override def digest(path: String, algorithm: HashFunctionAlgorithm): IO[Unit] = {
+    override def digest(path: String, algorithm: MessageDigestAlgorithms): IO[Unit] = {
       val HF: HashFunctions[IO] = implicitly[HashFunctions[IO]]
       val L = implicitly[Logger[IO]]
       implicit val ctxShift: ContextShift[IO] = IO.contextShift(global)

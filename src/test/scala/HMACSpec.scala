@@ -1,4 +1,4 @@
-import cinvestav.crypto.hashfunction.HashFunctionAlgorithm
+import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms
 import cinvestav.crypto.hmac.HMACAlgorithms.HMACAlgorithms
 //import cinvestav.crypto.hashfunction.HashFunctionAlgorithm.{HashFunctionAlgorithm, SHA1, SHA256, SHA384, SHA512}
 import cinvestav.crypto.hmac.KeyGeneratorAlgorithms

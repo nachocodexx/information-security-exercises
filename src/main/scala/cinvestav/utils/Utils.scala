@@ -17,6 +17,7 @@ object UtilsInterpreter {
 
     override def bytesToHexString(xs: Array[Byte]): String =
       xs.map(x=>Integer.toHexString(0xFF&x)).fold("")(_+_)
+
   }
 
 

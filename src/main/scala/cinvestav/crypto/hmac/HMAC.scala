@@ -10,6 +10,8 @@ import cinvestav.crypto.hmac.HMACAlgorithms.HMACAlgorithms
 import fs2.{Pipe,Stream}
 import io.chrisdavenport.log4cats.Logger
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import cinvestav.logger.LoggerX
+import cinvestav.logger.LoggerXInterpreter._
 
 trait HMAC[F[_]]{
   def digest[A](message:Array[Byte],HMACAlgorithm: HMACAlgorithms,key:Key,outputConvert:F[Array[Byte]=>A]):F[A]
@@ -25,7 +27,7 @@ object HMACInterpreter {
     override def digest[A](message: Array[Byte],HMACAlgorithm: HMACAlgorithms,key: Key,outputConvert:IO[Array[Byte]=>A])
     : IO[A]
     = {
-      implicit val L = implicitly[Logger[IO]]
+      implicit val L = implicitly[LoggerX[IO]]
       for {
         mac <- Mac.getInstance(HMACAlgorithm.toString).pure[IO]
         _<- mac.init(key).pure[IO]

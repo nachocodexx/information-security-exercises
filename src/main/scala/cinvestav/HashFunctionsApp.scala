@@ -6,8 +6,8 @@
  ******************************************************************************/
 
 package cinvestav
-import cinvestav.crypto.hashfunction.HashFunctionAlgorithm
-import cinvestav.crypto.hashfunction.HashFunctionAlgorithm.HashFunctionAlgorithm
+import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms.MessageDigestAlgorithms
+import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms
 import cinvestav.utils.files.FilesOpsInterpreter._
 import cinvestav.utils.files.FilesOps
 //
@@ -28,7 +28,7 @@ object HashFunctionsApp extends IOApp {
 
 
 
-  def program(algorithm: HashFunctionAlgorithm)(implicit FI:FilesOps[IO], HF:HashFunctions[IO]): IO[ExitCode] =  {
+  def program(algorithm: MessageDigestAlgorithms)(implicit FI:FilesOps[IO], HF:HashFunctions[IO]): IO[ExitCode] =  {
     val app = ConfigSource.default.load[DefaultConfig]
 //      .flatMap(x=>FI.digest(x.dirPath,algorithm).asRight)
       .flatMap(_=>HF.digest("HOLA ".getBytes,algorithm).asRight)
@@ -50,7 +50,7 @@ object HashFunctionsApp extends IOApp {
 
 
   override def run(args: List[String]): IO[ExitCode] =
-    program(HashFunctionAlgorithm.SHA1)
+    program(MessageDigestAlgorithms.SHA1)
 
 
 
