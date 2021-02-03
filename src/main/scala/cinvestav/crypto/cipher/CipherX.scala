@@ -12,8 +12,12 @@ import cinvestav.crypto.cipher.enums.CipherXPadding.CipherXPadding
 import cinvestav.logger.LoggerXInterpreter._
 import cinvestav.logger.LoggerX
 import cinvestav.utils.Utils
-import cinvestav.utils.crypto.KeyGeneratorX.KeyGeneratorX
-import cinvestav.utils.crypto.enums.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
+import cinvestav.crypto.keygen.KeyGeneratorX.KeyGeneratorX
+import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
+import cinvestav.crypto.keystore.KeyStoreX.KeyStoreX
+
+import java.security.KeyStore
+import javax.crypto.SecretKey
 //import com.sun.crypto.provider.AESKeyGenerator
 
 import javax.crypto.Cipher
@@ -27,7 +31,7 @@ import javax.crypto.spec.SecretKeySpec
 
 object CipherX {
   trait CipherX[F[_]]{
-    def encrypt(xs:Array[Byte],transformation: Transformation,keyGeneratorAlgorithms: KeyGeneratorAlgorithms)
+    def encrypt(xs:Array[Byte],transformation: Transformation,key:KeyStore.Entry)
     :F[String]
     def decrypt(xs:Array[Byte]):F[String]
   }
@@ -43,7 +47,7 @@ object CipherX {
 
 object CipherXDSL {
   import CipherX._
-  import cinvestav.utils.crypto.KeyGeneratorXDSL._
+  import cinvestav.crypto.keygen.KeyGeneratorXDSL._
   import cinvestav.utils.UtilsInterpreter._
   import cinvestav.logger.LoggerX
   import cinvestav.logger.LoggerXInterpreter._
@@ -52,21 +56,19 @@ object CipherXDSL {
     override def decrypt(xs: Array[Byte]): IO[String] = ???
 
     override def encrypt(xs: Array[Byte],transformation: Transformation,
-                         keyGeneratorAlgorithms: KeyGeneratorAlgorithms
+//                         keyGeneratorAlgorithms: KeyGeneratorAlgorithms
+                        key:KeyStore.Entry
                         ): IO[String] = {
       val KG = implicitly[KeyGeneratorX[IO]]
       val U = implicitly[Utils[IO]]
       val L = implicitly[LoggerX[IO]]
       for {
             cipher         <- Cipher.getInstance(transformation.show).pure[IO]
-            secretKey      <- KG.generateKey(keyGeneratorAlgorithms)
-            secretKeyBytes <- secretKey.getEncoded.pure[IO]
-            key            <- IO(new SecretKeySpec(secretKeyBytes,keyGeneratorAlgorithms.toString))
-            _              <- cipher.init(CipherXMode.ENCRYPT.id,key).pure[IO]
+            k              <- IO(key.asInstanceOf[KeyStore.SecretKeyEntry].getSecretKey)
+            _              <- cipher.init(CipherXMode.ENCRYPT.id,k).pure[IO]
             _              <- cipher.update(xs).pure[IO]
             bytes          <- cipher.doFinal().pure[IO]
             cipherText     <- (U.bytesToHexString _).pure[IO] ap bytes.pure[IO]
-            _              <- L.info(s"CipherText: $cipherText")
       } yield cipherText
     }
   }

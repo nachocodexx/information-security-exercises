@@ -9,9 +9,10 @@ package cinvestav.crypto.keystore
 import cats.data.OptionT
 import cats.implicits._
 import cats.effect.{ContextShift, ExitCode, IO, Resource, Timer}
+import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
 import cinvestav.crypto.keystore.enums.KeyStoreXTypes.KeyStoreXTypes
 import cinvestav.logger.LoggerX
-import cinvestav.utils.crypto.KeyGeneratorX.KeyGeneratorX
+import cinvestav.crypto.keygen.KeyGeneratorX.KeyGeneratorX
 import com.sun.javafx.scene.traversal.Algorithm
 
 import java.io.{FileInputStream, FileNotFoundException, FileOutputStream}
@@ -22,8 +23,9 @@ import javax.crypto.spec.SecretKeySpec
 import scala.util.Try
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import cinvestav.utils.crypto.KeyGeneratorXDSL._
-import cinvestav.utils.crypto.enums.KeyGeneratorAlgorithms
+import cinvestav.crypto.keygen.KeyGeneratorXDSL._
+import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms
+import cinvestav.crypto.keygen.enums.SecretKeyAlgorithms.SecretKeyAlgorithms
 
 object KeyStoreX {
   trait KeyStoreX[F[_]]{
@@ -33,9 +35,12 @@ object KeyStoreX {
                                                                                         timer:Timer[IO])
     :OptionT[F,
       KeyStore]
-    def saveSecretKey(ks:KeyStore,alias:String,key:String,password:String):F[Unit]
+    def saveSecretKey(ks:KeyStore,keyx:KeyX,password:String):F[Unit]
     def getSecretKey(ks:KeyStore,alias:String,pass:KeyStore.PasswordProtection):OptionT[F,KeyStore.Entry]
+    def passwordFromString(password:String):F[(Array[Char],KeyStore.PasswordProtection)]
   }
+
+  case class KeyX(value:String, alias:String, algorithm: KeyGeneratorAlgorithms)
 }
 
 
@@ -63,18 +68,17 @@ object KeyStoreXDSL {
       } yield ()
     }
 
-    override def saveSecretKey(ks: KeyStore, alias: String, key: String, password: String): IO[Unit] = {
+    override def saveSecretKey(ks: KeyStore,keyx:KeyX, password: String): IO[Unit] = {
       implicit val KG = implicitly[KeyGeneratorX[IO]]
       val L = implicitly[LoggerX[IO]]
       for {
-        sk    <-  KG.generateKeyEntry(key)
-        _     <-  L.info(sk.toString)
-        passChar <- password.toCharArray.pure[IO]
-        pass  <-  new KeyStore.PasswordProtection(passChar).pure[IO]
-        _     <-  ks.setEntry(alias,sk,pass).pure[IO]
-        _     <-  createFileOutput("default")
-                  .use(x=>ks.store(x,passChar).pure[IO])
-        _     <-  L.info("SECRET KEY SAVED")
+        sk                    <-  KG.generateKeyEntry(keyx.value,keyx.algorithm)
+        _                     <-  L.info(sk.toString)
+        passwords             <-  passwordFromString(password)
+        _                     <-  ks.setEntry(keyx.alias,sk,passwords._2).pure[IO]
+        _                     <-  createFileOutput("default")
+                                  .use(x=>ks.store(x,passwords._1).pure[IO])
+        _                     <-  L.info("SECRET KEY SAVED")
       } yield ()
     }
 
@@ -86,7 +90,6 @@ object KeyStoreXDSL {
 
       val response =
         for {
-//          passwordChr   <- password.toCharArray.pure[IO]
           ks            <- IO(KeyStore.getInstance(keyStoreXType.toString))
           ksLoad        = (in:FileInputStream)=>
                                   ks.load(in,password.toCharArray).pure[IO]
@@ -112,6 +115,11 @@ object KeyStoreXDSL {
       } yield sk
       OptionT[IO,KeyStore.Entry](x)
     }
+    override def passwordFromString(password: String): IO[(Array[Char], KeyStore.PasswordProtection)] =
+      for {
+        passChr   <- password.toCharArray.pure[IO]
+        passwords <- (passChr,new KeyStore.PasswordProtection(passChr)).pure[IO]
+      } yield passwords
   }
 
 }
