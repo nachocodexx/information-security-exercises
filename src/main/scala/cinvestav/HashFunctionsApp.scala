@@ -10,14 +10,10 @@ import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms.MessageDigest
 import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms
 import cinvestav.utils.files.FilesOpsInterpreter._
 import cinvestav.utils.files.FilesOps
-//
 import cats.implicits._
-import cats.effect.implicits._
-import cats.effect.{ExitCode, IO, IOApp, Sync}
-//
+import cats.effect.{ExitCode, IO, IOApp}
 import pureconfig._
 import pureconfig.generic.auto._
-//
 import cinvestav.crypto.hashfunction.HashFunctions
 import cinvestav.config.DefaultConfig
 import cinvestav.crypto.hashfunction.HashFunctionsInterpreter._

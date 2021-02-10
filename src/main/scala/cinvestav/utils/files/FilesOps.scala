@@ -25,7 +25,7 @@ trait FilesOps[F[_]]{
 // Apply a hash function on a file
   def digest(path:String, algorithm: MessageDigestAlgorithms): F[Unit]
 //  Apply a hash function to all files in a directory
-  def digestN[A](path:String, p:Pipe[IO,Array[Byte],A]):F[Unit]
+  def transformFiles[A](path:String, p:Pipe[IO,Array[Byte],A]):F[Unit]
 //  Remove all the files in a directory
   def cleanDirectory(path:String):F[Unit]
 }
@@ -88,7 +88,7 @@ object FilesOpsInterpreter {
         .map(Files.readAllBytes)
     }
 
-    override def digestN[A](path: String, p: Pipe[IO, Array[Byte], A]): IO[Unit] ={
+    override def transformFiles[A](path: String, p: Pipe[IO, Array[Byte], A]): IO[Unit] ={
       Blocker[IO].use {blocker=>
         directoryToBytes(blocker,path)
           .through(p)

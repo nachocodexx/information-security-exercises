@@ -26,17 +26,18 @@ import scala.language.postfixOps
 import cinvestav.crypto.keygen.KeyGeneratorXDSL._
 import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms
 import cinvestav.crypto.keygen.enums.SecretKeyAlgorithms.SecretKeyAlgorithms
+import cinvestav.crypto.keystore.enums.KeyStoreXTypes
 
 object KeyStoreX {
   trait KeyStoreX[F[_]]{
     def createKeyStore(keyStoreXType: KeyStoreXTypes,password:String,name:Option[String]):F[Unit]
     def loadKeyStore(keyStoreXType: KeyStoreXTypes,password:String,name:Option[String])(implicit
                                                                                         cs:ContextShift[IO],
-                                                                                        timer:Timer[IO])
-    :OptionT[F,
-      KeyStore]
+                                                                                        timer:Timer[IO]):OptionT[F, KeyStore]
     def saveSecretKey(ks:KeyStore,keyx:KeyX,password:String):F[Unit]
     def getSecretKey(ks:KeyStore,alias:String,pass:KeyStore.PasswordProtection):OptionT[F,KeyStore.Entry]
+    def getSecretKeyFromDefaultKeyStore(alias:String)(implicit  cs:ContextShift[F],timer:Timer[F]):OptionT[F,KeyStore
+    .Entry]
     def passwordFromString(password:String):F[(Array[Char],KeyStore.PasswordProtection)]
   }
 
@@ -46,7 +47,7 @@ object KeyStoreX {
 
 object KeyStoreXDSL {
   import KeyStoreX._
-  import cinvestav.logger.LoggerXInterpreter._
+  import cinvestav.logger.LoggerXDSL._
   def createFileOutput :(String)=>Resource[IO,FileOutputStream]= (filename)=>Resource.fromAutoCloseable(
     IO(new FileOutputStream(s"${System.getProperty("user.dir")}/target/keys/$filename.jcek"))
   )
@@ -109,12 +110,21 @@ object KeyStoreXDSL {
     override def getSecretKey(ks: KeyStore, alias: String,pass:KeyStore.PasswordProtection): OptionT[IO,KeyStore.Entry] = {
       val L= implicitly[LoggerX[IO]]
       val x = for{
+//        ks       <- loadKeyStore(KeyStoreXTypes.JCEKS,"password",Some("default"))
 //        password <- new KeyStore.PasswordProtection(pass.toCharArray).pure[IO]
         sk       <- Option(ks.getEntry(alias,pass)).pure[IO]
         _        <- L.info(sk.toString)
       } yield sk
       OptionT[IO,KeyStore.Entry](x)
     }
+    override def getSecretKeyFromDefaultKeyStore(alias: String)(implicit cs:ContextShift[IO],timer:Timer[IO])
+    : OptionT[IO, KeyStore.Entry] = for {
+        ks              <- loadKeyStore(KeyStoreXTypes.JCEKS,"password",Some("default"))
+        (_,password)    <- OptionT.liftF(passwordFromString("password"))
+        secretKey       <- getSecretKey(ks,alias,password)
+      } yield secretKey
+
+
     override def passwordFromString(password: String): IO[(Array[Char], KeyStore.PasswordProtection)] =
       for {
         passChr   <- password.toCharArray.pure[IO]

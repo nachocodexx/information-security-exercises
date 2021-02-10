@@ -12,5 +12,6 @@ object CipherXPadding extends Enumeration {
   val PKCS5PADDING:CipherXPadding = Value("PKCS5Padding")
   val PKCS1PADDING:CipherXPadding= Value("PKCS1Padding")
   val OAEPWithSHAAndMGF1Padding:CipherXPadding = Value("OAEPWithSHA-1AndMGF1Padding")
+  val OAEPWithSHA256AndMGF1Padding:CipherXPadding = Value("OAEPWithSHA-256AndMGF1Padding")
 
 }

@@ -8,61 +8,62 @@ package cinvestav
 
 import cats.implicits._
 import cats.data.OptionT
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ExitCode, IO, IOApp, Timer}
+import cinvestav.config.DefaultConfig
 import cinvestav.crypto.cipher.CipherX.{CipherX, Transformation}
 import cinvestav.crypto.cipher.CipherXDSL._
 import cinvestav.crypto.cipher.enums.{CipherXAlgorithms, CipherXModel, CipherXPadding}
-import cinvestav.crypto.keygen.KeyGeneratorX.KeyGeneratorX
-import cinvestav.crypto.keygen.enums.{KeyGeneratorAlgorithms, SecretKeyAlgorithms}
+import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms
 import cinvestav.crypto.keystore.KeyStoreXDSL._
 import cinvestav.crypto.keystore.KeyStoreX.{KeyStoreX, KeyX}
 import cinvestav.crypto.keystore.enums.KeyStoreXTypes
 import cinvestav.logger.LoggerX
-import cinvestav.logger.LoggerXInterpreter._
+import cinvestav.logger.LoggerXDSL._
+import cinvestav.utils.Utils
+import cinvestav.utils.UtilsInterpreter._
+import cinvestav.utils.files.FilesOps
+import cinvestav.utils.files.FilesOpsInterpreter._
+import pureconfig._
+import pureconfig.generic.auto._
 
 import java.security.KeyStore
-import javax.crypto.SecretKeyFactory
+import java.util.concurrent.Executors
+import scala.concurrent.ExecutionContext
 
 
 object CipherXApp extends  IOApp{
-  def program()(implicit C:CipherX[IO],KS:KeyStoreX[IO], L:LoggerX[IO]):IO[ExitCode] = {
-    val response = for {
-      transformation  <- OptionT.liftF(Transformation(CipherXAlgorithms.AES,CipherXModel.ECB,CipherXPadding.PKCS5PADDING).pure[IO])
-//
-      ks              <- KS.loadKeyStore(KeyStoreXTypes.JCEKS,"password",Some("default"))
-      (_,password)    <- OptionT.liftF(KS.passwordFromString("password"))
-//
-      secretKey       <- KS.getSecretKey(ks,"my-key",password)
-      plainText       <- OptionT.liftF("Hola".pure[IO])
-      cipherText      <- OptionT.liftF(C.encrypt(plainText.getBytes,transformation,secretKey))
-      _               <- OptionT.liftF(L.info(s"Cipher text: ${cipherText}"))
-    } yield ()
-    response.value.as(ExitCode.Success)
-  }
+//  val pool = Executors.newFixedThreadPool(5)
+//  val ec  = ExecutionContext.fromExecutorService(pool)
+//  override implicit val contextShift = IO.contextShift(ec)
+//  override protected implicit def timer: Timer[IO] = IO.timer(ec)
 
+  val desCBC = Transformation(CipherXAlgorithms.DES,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
+  val desECB = Transformation(CipherXAlgorithms.DES,CipherXModel.ECB,CipherXPadding.PKCS5PADDING)
+  val des3ECB = Transformation(CipherXAlgorithms.DES3,CipherXModel.ECB,CipherXPadding.PKCS5PADDING)
+  val des3CBC = Transformation(CipherXAlgorithms.DES3,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
+  val aesECB = Transformation(CipherXAlgorithms.AES,CipherXModel.ECB,CipherXPadding.PKCS5PADDING)
+  val aesCBC= Transformation(CipherXAlgorithms.AES,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
 
-  def program2()(implicit KS:KeyStoreX[IO],L:LoggerX[IO]): IO[ExitCode] ={
-    val x = for {
-      passStr    <- OptionT.liftF("password".pure[IO])
-      (_,_)      <- OptionT.liftF(KS.passwordFromString(passStr))
-      ks         <- KS.loadKeyStore(KeyStoreXTypes.JCEKS,passStr,Some("default"))
-      keyx       <- OptionT.liftF( KeyX(value="awesome",alias="my-key",KeyGeneratorAlgorithms.AES).pure[IO] )
-      _          <- OptionT.liftF(KS.saveSecretKey(ks,keyx,passStr))
-//      res <- IO.unit.as(ExitCode.Success
-    } yield ()
-    x.value.as(ExitCode.Success)
-  }
-  def program3()(implicit KS:KeyStoreX[IO],L:LoggerX[IO]) = {
-
-   val res =  for {
-      pp         <- OptionT.liftF(new KeyStore.PasswordProtection("password".toCharArray).pure[IO])
-      ks         <- KS.loadKeyStore(KeyStoreXTypes.JCEKS, "password", Some("default"))
-      entry      <- KS.getSecretKey(ks, "sk0", pp)
-      _          <- OptionT.liftF(L.info(entry.toString) )
-    } yield ()
-    res.value.as(ExitCode.Success)
+  def program(alias:String,transformation: Transformation)(implicit FO:FilesOps[IO],C:CipherX[IO] ,KS:KeyStoreX[IO],
+                                                           U:Utils[IO])=
+  ConfigSource.default.load[DefaultConfig].flatMap {config=>
+    KS.getSecretKeyFromDefaultKeyStore(alias)(contextShift,timer).value
+      .flatMap {
+        case Some(value) =>
+           val pipe = C.encryptFile(value,transformation, (U.bytesToHexString _).pure[IO])
+           FO.transformFiles(config.dirPath, pipe)
+        case None => IO.unit
+      }.asRight
   }
   override def run(args: List[String]): IO[ExitCode] =
-    program()
-//      keyStoreXIO.createKeyStore(KeyStoreXTypes.JCEKS,"password",Some("default")).as(ExitCode.Success)
+  program("aeskey", aesECB) match {
+    case Left(value) =>
+      println(value)
+      IO.unit.as(ExitCode.Error)
+    case Right(value) =>
+      println("RIGHT")
+      value.as(ExitCode.Success)
+//        .flatTap(_=>ec.shutdown().pure[IO])
+  }
+  //      keyStoreXIO.createKeyStore(KeyStoreXTypes.JCEKS,"password",Some("default")).as(ExitCode.Success)
 }

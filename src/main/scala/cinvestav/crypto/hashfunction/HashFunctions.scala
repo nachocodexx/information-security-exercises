@@ -7,7 +7,7 @@ import cinvestav.logger.LoggerX
 import cinvestav.utils.Utils
 import cinvestav.utils.UtilsInterpreter._
 import fs2.Pipe
-import cinvestav.logger.LoggerXInterpreter._
+import cinvestav.logger.LoggerXDSL._
 
 import java.security.MessageDigest
 

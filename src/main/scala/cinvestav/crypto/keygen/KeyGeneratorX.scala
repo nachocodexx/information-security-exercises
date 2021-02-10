@@ -11,7 +11,7 @@ import cats.implicits._
 import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
 import cinvestav.crypto.keygen.enums.SecretKeyAlgorithms.SecretKeyAlgorithms
 
-import java.security.{Key, KeyStore}
+import java.security.{Key, KeyStore, SecureRandom}
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.SecretKeySpec
 
@@ -20,6 +20,7 @@ object KeyGeneratorX{
     def getInstance(algorithms: KeyGeneratorAlgorithms):F[KeyGenerator]
     def generateKey(algorithms: KeyGeneratorAlgorithms):F[Key]
     def generateKeyEntry(password:String,keyGeneratorAlgorithms: KeyGeneratorAlgorithms):F[KeyStore.SecretKeyEntry]
+    def generateRandomKey(algorithms: KeyGeneratorAlgorithms):F[Key]
   }
 }
 
@@ -42,5 +43,12 @@ object KeyGeneratorXDSL {
         .map(new KeyStore.SecretKeyEntry(_))
     }
 
+    override def generateRandomKey(algorithms: KeyGeneratorAlgorithms): IO[Key] =
+      for {
+        generator     <- getInstance(algorithms)
+        secureRandom  <- IO(new SecureRandom())
+        _             <- generator.init(secureRandom).pure[IO]
+        key           <- generator.generateKey().pure[IO]
+    } yield key
   }
 }

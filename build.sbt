@@ -13,22 +13,24 @@ lazy val PureConfig = "com.github.pureconfig" %% "pureconfig" % "0.14.0"
 lazy val Slf4j ="io.chrisdavenport" %% "log4cats-slf4j" % "1.1.1"
 lazy val LogbackClassic= "ch.qos.logback" % "logback-classic" % "1.2.3"
 lazy val ScalaMeter= "com.storm-enroute" %% "scalameter" % "0.20"
-
-
+lazy val ScalaTest = "org.scalatest" %% "scalatest" % "3.2.2" % Test
+lazy val Scalatic = "org.scalactic" %% "scalactic" % "3.2.2"
 
 lazy val root = (project in file(".")).settings(
   name := "cryptography",
   version := "0.0.1",
   scalaVersion := "2.13.4",
-  resolvers += "Sonatype OSS Snapshots" at
-    "https://oss.sonatype.org/content/repositories/releases",
-  testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
+  resolvers ++= Seq(
+    "Artima Maven Repository" at "https://repo.artima.com/releases",
+    "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/releases",
+  ),
+testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework"),
   parallelExecution in Test := false,
   fork := true,
   useCoursier:= false,
   semanticdbEnabled := false,
   outputStrategy := Some(StdoutOutput),
-//  connectInput := true,
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest,"-o"),
   libraryDependencies ++= Seq(
     Cat,
     CatEffects,
@@ -37,7 +39,9 @@ lazy val root = (project in file(".")).settings(
     PureConfig,
     Slf4j,
     LogbackClassic,
-    ScalaMeter
+//    ScalaMeter,
+    ScalaTest,
+    Scalatic
   )
 
 )

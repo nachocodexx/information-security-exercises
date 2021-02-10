@@ -1,30 +1,34 @@
 package cinvestav
 
 import cats.implicits._
-import cats.effect.implicits._
 import cats.effect.{ExitCode, IO, IOApp, Sync}
 import cinvestav.config.DefaultConfig
-import cinvestav.crypto.hmac.{HMAC, HMACAlgorithms, KeyGeneratorAlgorithms}
+import cinvestav.crypto.hmac.{HMAC, HMACAlgorithms}
 import cinvestav.crypto.hmac.HMACAlgorithms.HMACAlgorithms
 import cinvestav.crypto.hmac.HMACInterpreter._
-import cinvestav.crypto.hmac.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
+import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms._
+import cinvestav.crypto.keygen.KeyGeneratorX.KeyGeneratorX
 import cinvestav.utils.Utils
 import cinvestav.utils.UtilsInterpreter._
 import cinvestav.utils.files.FilesOps
 import pureconfig.generic.auto._
 import pureconfig.ConfigSource
+import cinvestav.utils.formatters.FormattersDSL._
 import cinvestav.utils.files.FilesOpsInterpreter._
+import cinvestav.crypto.keygen.KeyGeneratorXDSL._
 
 
 object HMACApp extends IOApp{
   def program(keyGeneratorAlgorithm: KeyGeneratorAlgorithms,hMACAlgorithm:HMACAlgorithms)(implicit FO:FilesOps[IO],
-                                                                                           H:HMAC[IO], U:Utils[IO])
+                                                                                           H:HMAC[IO], U:Utils[IO],
+                                                                                          KG:KeyGeneratorX[IO])
   :IO[ExitCode] = {
     val app = ConfigSource.default.load[DefaultConfig]
       .flatMap{ config =>
-         H.generateKey(keyGeneratorAlgorithm).flatMap{ key =>
-           val f = (U.bytesToHexString _).pure[IO]
-           FO.digestN(config.dirPath,H.digestFile(hMACAlgorithm,key,f))
+//         H.generateKey(keyGeneratorAlgorithm).flatMap{ key =>
+        KG.generateRandomKey(keyGeneratorAlgorithm).flatMap{ key=>
+//           val f = (U.bytesToHexString _).pure[IO]
+           FO.transformFiles(config.dirPath,H.digestFile(hMACAlgorithm,key))
          }.asRight
 
       }
@@ -39,5 +43,5 @@ object HMACApp extends IOApp{
 
   }
   override def run(args: List[String]): IO[ExitCode] =
-    program(KeyGeneratorAlgorithms.HmacSHA1,HMACAlgorithms.HmacSHA1)
+    program(HmacSHA1,HMACAlgorithms.HmacSHA1)
 }

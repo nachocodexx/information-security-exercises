@@ -1,39 +1,39 @@
-import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms
-import cinvestav.crypto.hmac.HMACAlgorithms.HMACAlgorithms
-//import cinvestav.crypto.hashfunction.HashFunctionAlgorithm.{HashFunctionAlgorithm, SHA1, SHA256, SHA384, SHA512}
-import cinvestav.crypto.hmac.KeyGeneratorAlgorithms
+import cats.effect.IO
 import cinvestav.crypto.hmac.HMACAlgorithms
-import org.scalameter.api._
-import org.scalameter.picklers.noPickler.instance
-import cinvestav.HMACApp.program
 import cinvestav.crypto.hmac.HMACInterpreter._
-import cinvestav.utils.files.FilesOpsInterpreter._
+import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms._
+import cinvestav.crypto.keygen.KeyGeneratorXDSL._
+import org.scalatest.funsuite.AnyFunSuite
+import cats.implicits._
 import cinvestav.utils.UtilsInterpreter._
 
+/*******************************************************************************
+ * Copyright (c) 2021, Ignacio Castillo.
+ * ________________________________________
+ * Created at: 2/3/21, 8:12 PM
+ ******************************************************************************/
+import cinvestav.HMACApp.program
+import cinvestav.utils.files.FilesOpsInterpreter._
+import cinvestav.crypto.hmac.HMACInterpreter._
+import cinvestav.utils.UtilsInterpreter._
+import cinvestav.utils.formatters.FormattersDSL._
+import cinvestav.logger.LoggerXDSL._
 
-object HMACSpec extends  Bench.OfflineReport{
+class HMACSpec extends AnyFunSuite{
 
-
-  override def persistor = new SerializationPersistor("target/results")
-
-  override def reporter: Reporter[Double] = Reporter.Composite(
-    new DsvReporter(','),
-    new RegressionReporter(
-      RegressionReporter.Tester.Accepter(),
-      RegressionReporter.Historian.ExponentialBackoff()
-    ),
-    new HtmlReporter(true)
-  )
-  val algorithms: Gen[HMACAlgorithms] = Gen.enumeration("algorithms")(
-    HMACAlgorithms.HmacSHA1,HMACAlgorithms.HmacSHA256,HMACAlgorithms.HmacSHA384,HMACAlgorithms.HmacSHA512
-  )
-
-  performance of "FileOps" in {
-    measure method "digest" config (
-      exec.independentSamples -> 2,
-      exec.benchRuns->5
-    ) in {
-        using(algorithms) in { x=> program(KeyGeneratorAlgorithms.HmacSHA1,x).unsafeRunSync()}
-    }
+  test("DES/SHA1"){
+    program(DES,HMACAlgorithms.HmacSHA1)
+      .unsafeRunSync()
+    assert(true)
+  }
+  test("Simple test"){
+    val cipherText=  for {
+      key             <-   keyGeneratorXIO.generateRandomKey(DES)
+      data            <-   "HOLA".pure[IO].map(_.getBytes)
+      value           <-   HMACIO.digest(data,HMACAlgorithms.HmacSHA1,key)
+      _               <-  loggerXIO.info(value)
+    } yield value
+    cipherText.unsafeRunSync()
+    assert(true)
   }
 }
