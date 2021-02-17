@@ -31,7 +31,7 @@ object HashFunctionsInterpreter {
         _<- messageDigest.update(bytes).pure[IO]
         digestBytes <- messageDigest.digest().pure[IO]
 //        hex <- digestBytes.map(x=>Integer.toHexString(0xFF&x)).fold("")(_+_).pure[IO]
-        hex <- IO(U.bytesToHexString _) ap digestBytes.pure[IO]
+        hex <- IO(U.toHex _) ap digestBytes.pure[IO]
         _<- L.info(hex)
       } yield hex
     }

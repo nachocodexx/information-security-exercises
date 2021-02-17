@@ -1,14 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2021, Ignacio Castillo.
+ * ________________________________________
+ * Created at: 2/3/21, 6:17 PM
+ ******************************************************************************/
 import cats.effect.IO
 import cinvestav.crypto.cipher.CipherX.Transformation
 import cinvestav.crypto.cipher.enums.{CipherXAlgorithms, CipherXModel, CipherXPadding}
 import cinvestav.utils.files.FilesOpsInterpreter._
 import org.scalatest.funsuite.AnyFunSuite
 
-/*******************************************************************************
- * Copyright (c) 2021, Ignacio Castillo.
- * ________________________________________
- * Created at: 2/3/21, 6:17 PM
- ******************************************************************************/
 import cinvestav.CipherXApp.program
 import cinvestav.crypto.cipher.CipherXDSL._
 import cinvestav.utils.UtilsInterpreter._
@@ -57,6 +57,11 @@ class CipherSpec extends AnyFunSuite{
       assert(true)
       Right(x)
     }
+  }
+
+  test("Encrypt / Decrypt using DES/ECB/PKCS5Padding"){
+    val plainText = "Hello World".getBytes
+//    cipherXIO.encrypt(plainText,desECB)
   }
 
 }

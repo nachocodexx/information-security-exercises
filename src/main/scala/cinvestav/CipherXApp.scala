@@ -7,17 +7,13 @@
 package cinvestav
 
 import cats.implicits._
-import cats.data.OptionT
-import cats.effect.{ExitCode, IO, IOApp, Timer}
+import cats.effect.{ExitCode, IO, IOApp}
 import cinvestav.config.DefaultConfig
 import cinvestav.crypto.cipher.CipherX.{CipherX, Transformation}
 import cinvestav.crypto.cipher.CipherXDSL._
 import cinvestav.crypto.cipher.enums.{CipherXAlgorithms, CipherXModel, CipherXPadding}
-import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms
 import cinvestav.crypto.keystore.KeyStoreXDSL._
-import cinvestav.crypto.keystore.KeyStoreX.{KeyStoreX, KeyX}
-import cinvestav.crypto.keystore.enums.KeyStoreXTypes
-import cinvestav.logger.LoggerX
+import cinvestav.crypto.keystore.KeyStoreX.KeyStoreX
 import cinvestav.logger.LoggerXDSL._
 import cinvestav.utils.Utils
 import cinvestav.utils.UtilsInterpreter._
@@ -26,16 +22,8 @@ import cinvestav.utils.files.FilesOpsInterpreter._
 import pureconfig._
 import pureconfig.generic.auto._
 
-import java.security.KeyStore
-import java.util.concurrent.Executors
-import scala.concurrent.ExecutionContext
-
 
 object CipherXApp extends  IOApp{
-//  val pool = Executors.newFixedThreadPool(5)
-//  val ec  = ExecutionContext.fromExecutorService(pool)
-//  override implicit val contextShift = IO.contextShift(ec)
-//  override protected implicit def timer: Timer[IO] = IO.timer(ec)
 
   val desCBC = Transformation(CipherXAlgorithms.DES,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
   val desECB = Transformation(CipherXAlgorithms.DES,CipherXModel.ECB,CipherXPadding.PKCS5PADDING)
@@ -50,7 +38,7 @@ object CipherXApp extends  IOApp{
     KS.getSecretKeyFromDefaultKeyStore(alias)(contextShift,timer).value
       .flatMap {
         case Some(value) =>
-           val pipe = C.encryptFile(value,transformation, (U.bytesToHexString _).pure[IO])
+           val pipe = C.encryptFile(value,transformation)
            FO.transformFiles(config.dirPath, pipe)
         case None => IO.unit
       }.asRight
@@ -63,7 +51,6 @@ object CipherXApp extends  IOApp{
     case Right(value) =>
       println("RIGHT")
       value.as(ExitCode.Success)
-//        .flatTap(_=>ec.shutdown().pure[IO])
   }
   //      keyStoreXIO.createKeyStore(KeyStoreXTypes.JCEKS,"password",Some("default")).as(ExitCode.Success)
 }

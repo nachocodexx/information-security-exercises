@@ -50,5 +50,10 @@ object KeyGeneratorXDSL {
         _             <- generator.init(secureRandom).pure[IO]
         key           <- generator.generateKey().pure[IO]
     } yield key
+
+//    override def generateKeyByPassword(password: String): IO[Array[Byte]] = for {
+//
+//      result <- IO(Array.empty[Byte])
+//    } yield result
   }
 }

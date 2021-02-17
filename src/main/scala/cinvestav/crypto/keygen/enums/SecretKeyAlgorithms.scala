@@ -15,9 +15,8 @@ object SecretKeyAlgorithms extends Enumeration {
   val ARC4 = Value("ARCFOUR")
   val DES = Value("DES")
   val DES3 = Value("DESede")
-
   //  val PBEWithHmacSHA256AndAES_128=Value("PBEWithHmacSHA256AndAES_128")
-  def getPBE(digest: MessageDigestAlgorithms, encryption: CipherXAlgorithm): SecretKeyAlgorithms =
-    Value(s"PBEWith${digest.toString}And${encryption.toString}")
+  def getPBE(digest: MessageDigestAlgorithms, encryption: CipherXAlgorithm,keyLen:Int): SecretKeyAlgorithms =
+    Value(s"PBEWith${digest.toString.replace("-","")}And${encryption.toString}_$keyLen")
 
 }

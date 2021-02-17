@@ -17,7 +17,6 @@ import cinvestav.utils.formatters.Formatter
 
 trait HMAC[F[_]]{
   def digest[A](message:Array[Byte],HMACAlgorithm: HMACAlgorithms,key:Key )(implicit FR:Formatter[F,A]):F[A]
-//  def digest[A](message:Array[Byte],HMACAlgorithm: HMACAlgorithms,key:Key,outputConvert:F[Array[Byte]=>A]  ):F[A]
   def digestFile[A](HMACAlgorithm: HMACAlgorithms,key:Key)(implicit FR:Formatter[F,A]):Pipe[F,Array[Byte],A]
 }
 
