@@ -15,4 +15,5 @@ object PBKDF2Algorithms extends Enumeration {
   val HMACSHA512 = Value(base("SHA512"))
 
   def fromString(x:String) = Value(base(x))
+  def getHashAlgorithm(x:PBKDF2Algorithms.PBKDF2Algortims) = x.toString.split("PBKDF2WithHmac")(1)
 }

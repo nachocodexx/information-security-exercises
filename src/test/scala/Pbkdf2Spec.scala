@@ -39,7 +39,7 @@ class Pbkdf2Spec extends AnyFunSuite{
     val password = "topsecret"
     val plaintext = "helloworld"
     val secretKey  = pbkdf2IO
-      .generatePassword(CipherXAlgorithms.AES,PBKDF2Algorithms.HMACSHA1,password,100,1000,128)
+      .generatePassword(CipherXAlgorithms.AES,PBKDF2Algorithms.HMACSHA1,password,8,1000,128)
       .unsafeRunSync()
 
 //    val key =secretKey.getEncoded
@@ -51,7 +51,8 @@ class Pbkdf2Spec extends AnyFunSuite{
     val cipherText = cipherXIO.encrypt(plaintext.getBytes,aesCBC,secretKey).unsafeRunSync()
     val plain      = cipherXIO.decrypt(cipherText,aesCBC,secretKey).unsafeRunSync()
     val iv = cipherText.params.map(_.getEncoded).getOrElse(Array.empty[Byte])
-    val ivv = new IvParameterSpec(iv)
+    println(s"IV: ${iv.size}")
+//    val ivv = new IvParameterSpec(iv)
     println(utilsIO.toHex(iv))
     val text = new String(plain.bytes,"UTF8")
 

@@ -18,7 +18,7 @@ import cinvestav.utils.files.FilesOpsInterpreter._
 import cinvestav.crypto.keygen.KeyGeneratorXDSL._
 
 
-object HMACApp extends IOApp{
+object HMACApp {
   def program(keyGeneratorAlgorithm: KeyGeneratorAlgorithms,hMACAlgorithm:HMACAlgorithms)(implicit FO:FilesOps[IO],
                                                                                            H:HMAC[IO], U:Utils[IO],
                                                                                           KG:KeyGeneratorX[IO])
@@ -42,6 +42,6 @@ object HMACApp extends IOApp{
     }
 
   }
-  override def run(args: List[String]): IO[ExitCode] =
-    program(HmacSHA1,HMACAlgorithms.HmacSHA1)
+//  override def run(args: List[String]): IO[ExitCode] =
+//    program(HmacSHA1,HMACAlgorithms.HmacSHA1)
 }

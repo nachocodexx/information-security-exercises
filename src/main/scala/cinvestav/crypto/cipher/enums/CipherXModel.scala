@@ -10,4 +10,5 @@ object CipherXModel extends  Enumeration {
   type CipherXModel = Value
   val CBC = Value("CBC")
   val ECB = Value("ECB")
+  def fromString(x:String)=Value(x)
 }

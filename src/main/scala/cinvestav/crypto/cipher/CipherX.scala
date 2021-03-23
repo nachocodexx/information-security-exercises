@@ -56,7 +56,6 @@ object CipherXDSL {
       cipherText.params match {
       case Some(value) => for {
               cipher    <- Cipher.getInstance(transformation.show).pure[IO]
-//              _         <- IO(println(value))
               _         <- cipher.init(CipherXMode.DECRYPT.id,secretKey,value).pure[IO]
               bytes     <- cipher.doFinal(cipherText.value).pure[IO]
               plainText <- PlainText(bytes) .pure[IO]
@@ -85,8 +84,10 @@ object CipherXDSL {
     override def cipher(mode: CipherXMode, xs: Array[Byte], transformation: Transformation, secretKey: SecretKey)
     : IO[CipherText] =
       for {
+//        Constant provider: only for testing purposes = Bouncy Castle.
         cipher         <- Cipher.getInstance(transformation.show).pure[IO]
         params         <- cipher.getParameters.pure[IO]
+//        _              <- IO(AlgorithmParamete
         _              <- cipher.init(mode.id,secretKey,params).pure[IO]
         bytes          <- cipher.doFinal(xs).pure[IO]
         result         <- CipherText(bytes,Option(params),Some(transformation.show),Some(bytes.size)).pure[IO]

@@ -20,7 +20,7 @@ import cinvestav.crypto.hashfunction.HashFunctionsInterpreter._
 //
 import scala.language.postfixOps
 
-object HashFunctionsApp extends IOApp {
+object HashFunctionsApp {
 
 
 
@@ -45,8 +45,8 @@ object HashFunctionsApp extends IOApp {
 
 
 
-  override def run(args: List[String]): IO[ExitCode] =
-    program(MessageDigestAlgorithms.SHA1)
+//  override def run(args: List[String]): IO[ExitCode] =
+//    program(MessageDigestAlgorithms.SHA1)
 
 
 

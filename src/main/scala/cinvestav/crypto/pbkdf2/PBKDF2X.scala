@@ -19,26 +19,22 @@ import javax.crypto.spec.{PBEKeySpec, SecretKeySpec}
 case class SecretKeyAndSalt(key:SecretKey,salt:Array[Byte])
 trait PBKDF2X[F[_]] {
   def generatePassword(cipherXAlgorithm: CipherXAlgorithm, algorithm:PBKDF2Algortims, rawPassword:String, saltBytes:Int, iterations:Int,
-                       hashBytes:Int):F[SecretKey]
+                       hashLength:Int):F[SecretKey]
 
-//  def getKeyFrom(cipherXAlgorithm: CipherXAlgorithm,algortim: PBKDF2Algortims,salt:String,iterations:Int)(implicit
-//                                                                                                           U:Utils[F])
-//  :F[SecretKey]
   def generatePasswordWithSalt(salt:Array[Byte],cipherXAlgorithm: CipherXAlgorithm, algorithm:PBKDF2Algortims,
-                               rawPassword:String,
-                        saltBytes:Int, iterations:Int,
-                       hashBytes:Int):F[SecretKey]
+                               rawPassword:String, iterations:Int,
+                               keyLen:Int):F[SecretKey]
   def generateSalt(saltBytes:Int):F[Array[Byte]]
 }
 object PBKDF2XDSL {
   implicit  def pbkdf2IO: PBKDF2X[IO] = new PBKDF2X[IO] {
     override def generatePassword(cipherXAlgorithm: CipherXAlgorithm, algorithm: PBKDF2Algortims, rawPassword: String, saltBytes: Int, iterations: Int,
-                                  hashBytes: Int)
+                                  hashLength: Int)
     : IO[SecretKey] =
       for {
         salt <- generateSalt(saltBytes)
         passwordChar <- rawPassword.toCharArray.pure[IO]
-        passwordSpec <- IO(new PBEKeySpec(passwordChar, salt, iterations, hashBytes))
+        passwordSpec <- IO(new PBEKeySpec(passwordChar, salt, iterations, hashLength))
         skf <- IO(SecretKeyFactory.getInstance(algorithm.toString))
         result <- skf.generateSecret(passwordSpec).pure[IO]
         key <- IO(new SecretKeySpec(result.getEncoded, cipherXAlgorithm.toString))
@@ -51,22 +47,15 @@ object PBKDF2XDSL {
     } yield  salt
 
     override def generatePasswordWithSalt(salt:Array[Byte], cipherXAlgorithm: CipherXAlgorithm,
-    algorithm: PBKDF2Algortims,
-                                          rawPassword: String, saltBytes: Int, iterations: Int, hashBytes: Int)
+                                          algorithm: PBKDF2Algortims,
+                                          rawPassword: String, iterations: Int, keyLen: Int)
     : IO[SecretKey] = for {
-//      salt         <- generateSalt(saltBytes)
       passwordChar <- rawPassword.toCharArray.pure[IO]
-      passwordSpec <- IO(new PBEKeySpec(passwordChar, salt, iterations, hashBytes))
+      passwordSpec <- IO(new PBEKeySpec(passwordChar, salt, iterations, keyLen))
       skf          <- IO(SecretKeyFactory.getInstance(algorithm.toString))
       result       <- skf.generateSecret(passwordSpec).pure[IO]
       key          <- IO(new SecretKeySpec(result.getEncoded, cipherXAlgorithm.toString))
     } yield key
 
-//    override def getKeyFrom(cipherXAlgorithm: CipherXAlgorithm, algortim: PBKDF2Algortims, salt: String,
-//                             iterations: Int)(implicit U:Utils[IO]): IO[SecretKey] =
-//      for {
-//       saltBytes <- U.fromHex(salt).pure[IO]
-//
-//    } yield ???
   }
 }

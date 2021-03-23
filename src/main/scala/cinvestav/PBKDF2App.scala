@@ -30,7 +30,7 @@ import cinvestav.utils.Utils
 import java.nio.file.Paths
 import javax.crypto.spec.SecretKeySpec
 
-object PBKDF2App extends IOApp{
+object PBKDF2App{
 
   val desECB = Transformation(CipherXAlgorithms.DES,CipherXModel.ECB,CipherXPadding.PKCS5PADDING)
   val desCBC = Transformation(CipherXAlgorithms.DES,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
@@ -76,8 +76,8 @@ object PBKDF2App extends IOApp{
       .drain
   }
 //    FO.directoryToBytes()
-  override def run(args: List[String]): IO[ExitCode] =
-    program[IO]()
-      .as(ExitCode.Success)
+//  override def run(args: List[String]): IO[ExitCode] =
+//    program[IO]()
+//      .as(ExitCode.Success)
 
 }

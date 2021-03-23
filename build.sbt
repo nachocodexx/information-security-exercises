@@ -15,6 +15,7 @@ lazy val LogbackClassic= "ch.qos.logback" % "logback-classic" % "1.2.3"
 lazy val ScalaMeter= "com.storm-enroute" %% "scalameter" % "0.20"
 lazy val ScalaTest = "org.scalatest" %% "scalatest" % "3.2.2" % Test
 lazy val Scalatic = "org.scalactic" %% "scalactic" % "3.2.2"
+lazy val BouncyCastle ="org.bouncycastle" % "bcprov-jdk15on" % "1.68"
 
 lazy val root = (project in file(".")).settings(
   name := "cryptography",
@@ -37,9 +38,15 @@ lazy val root = (project in file(".")).settings(
     PureConfig,
     Slf4j,
     LogbackClassic,
+    BouncyCastle,
 //    ScalaMeter,
     ScalaTest,
     Scalatic
   )
 
 )
+enablePlugins(JavaAppPackaging)
+enablePlugins(DockerPlugin)
+dockerRepository := Some("nachocode")
+packageName in Docker := "cinvestav-is-lab01"
+version in Docker := "latest"

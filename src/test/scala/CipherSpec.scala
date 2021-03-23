@@ -9,7 +9,8 @@ import cinvestav.crypto.cipher.enums.{CipherXAlgorithms, CipherXModel, CipherXPa
 import cinvestav.utils.files.FilesOpsInterpreter._
 import org.scalatest.funsuite.AnyFunSuite
 
-import cinvestav.CipherXApp.program
+
+import cinvestav.CipherXApp
 import cinvestav.crypto.cipher.CipherXDSL._
 import cinvestav.utils.UtilsInterpreter._
 import cinvestav.crypto.keystore.KeyStoreXDSL._
@@ -22,42 +23,42 @@ class CipherSpec extends AnyFunSuite{
   val des3CBC = Transformation(CipherXAlgorithms.DES3,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
   val aesECB = Transformation(CipherXAlgorithms.AES,CipherXModel.ECB,CipherXPadding.PKCS5PADDING)
   val aesCBC= Transformation(CipherXAlgorithms.AES,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
-  test("DES/ECB/PKCS5Padding"){
-    program("deskey", desECB).map(_.unsafeRunSync).flatTap{x=>
-      assert(true)
-      Right(x)
-    }
-  }
-  test("DES/CBC/PKCS5Padding"){
-    program("deskey", desCBC).map(_.unsafeRunSync).flatTap{x=>
-      assert(true)
-      Right(x)
-    }
-  }
-  test("DES3/ECB/PKCS5Padding"){
-    program("des3key", des3ECB).map(_.unsafeRunSync).flatTap{x=>
-      assert(true)
-      Right(x)
-    }
-  }
-  test("DES3/CBC/PKCS5Padding"){
-    program("des3key", des3CBC).map(_.unsafeRunSync).flatTap{x=>
-      assert(true)
-      Right(x)
-    }
-  }
-  test("AES/ECB/PKCS5Padding"){
-    program("aeskey", aesECB).map(_.unsafeRunSync).flatTap{x=>
-      assert(true)
-      Right(x)
-    }
-  }
-  test("AES/CBC/PKCS5Padding"){
-    program("aeskey", aesCBC).map(_.unsafeRunSync).flatTap{x=>
-      assert(true)
-      Right(x)
-    }
-  }
+//  test("DES/ECB/PKCS5Padding"){
+//    program("deskey", desECB).map(_.unsafeRunSync).flatTap{x=>
+//      assert(true)
+//      Right(x)
+//    }
+//  }
+//  test("DES/CBC/PKCS5Padding"){
+//    program("deskey", desCBC).map(_.unsafeRunSync).flatTap{x=>
+//      assert(true)
+//      Right(x)
+//    }
+//  }
+//  test("DES3/ECB/PKCS5Padding"){
+//    program("des3key", des3ECB).map(_.unsafeRunSync).flatTap{x=>
+//      assert(true)
+//      Right(x)
+//    }
+//  }
+//  test("DES3/CBC/PKCS5Padding"){
+//    program("des3key", des3CBC).map(_.unsafeRunSync).flatTap{x=>
+//      assert(true)
+//      Right(x)
+//    }
+//  }
+//  test("AES/ECB/PKCS5Padding"){
+//    program("aeskey", aesECB).map(_.unsafeRunSync).flatTap{x=>
+//      assert(true)
+//      Right(x)
+//    }
+//  }
+//  test("AES/CBC/PKCS5Padding"){
+//    program("aeskey", aesCBC).map(_.unsafeRunSync).flatTap{x=>
+//      assert(true)
+//      Right(x)
+//    }
+//  }
 
   test("Encrypt / Decrypt using DES/ECB/PKCS5Padding"){
     val plainText = "Hello World".getBytes
