@@ -8,21 +8,22 @@ package cinvestav.utils.stopwatch
 
 import cats.implicits._
 import cats.data.{Chain, StateT, WriterT}
-import cats.effect.{Clock, IO, Sync, Timer}
+import cats.effect.{Clock, IO, Sync}
 
-import scala.concurrent.duration.TimeUnit
+import scala.concurrent.duration.{FiniteDuration, TimeUnit}
 
 trait StopWatch[F[_]]{
-   def measure[A](fa:F[A],timeUnit: TimeUnit)(implicit c:Timer[F]):F[(A,Long)]
+   def measure[A](fa:F[A],timeUnit: TimeUnit):F[(A,FiniteDuration)]
 }
 
 object StopWatchDSL {
-  implicit def stopWatchT[F[_]:Sync]: StopWatch[F] = new StopWatch[F] {
-    override def measure[A](fa: F[A],timeUnit: TimeUnit)(implicit timer: Timer[F]): F[(A,Long)] =
+  implicit def stopWatchT[F[_]]: StopWatch[IO] = new StopWatch[IO] {
+    override def measure[A](fa: IO[A],timeUnit: TimeUnit): IO[(A,FiniteDuration)] =
       for {
-        start  <- timer.clock.realTime(timeUnit)
+        start  <- IO.realTime
         result <- fa
-        finish <- timer.clock.realTime(timeUnit)
+        finish <- IO.realTime
+//        duratio <- IO
     } yield ( result,finish-start)
 
   }

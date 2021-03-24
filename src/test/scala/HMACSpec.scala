@@ -1,4 +1,5 @@
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cinvestav.crypto.hmac.HMACAlgorithms
 import cinvestav.crypto.hmac.HMACInterpreter._
 import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms._

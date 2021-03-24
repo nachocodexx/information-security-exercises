@@ -1,4 +1,5 @@
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cats.implicits._
 import cinvestav.crypto.cipher.CipherX.Transformation
 import cinvestav.crypto.cipher.enums.{CipherXAlgorithms, CipherXModel, CipherXPadding}
@@ -23,19 +24,19 @@ class BouncyCastleSpec extends AnyFunSuite{
   test("Cipher: encrypt"){
 
 
-    val app = initBC() >> pbkdf2IO
-      .generatePassword(CipherXAlgorithms.AES,PBKDF2Algorithms.HMACSHA256,"hola",8,1000,256)
-      .flatMap(key=>
-        cipherXIO.encrypt("HOLA".getBytes,t1,key)
-          .flatMap(cipherXIO.decrypt(_,t1,key))
-//          .map
-      )
-      .map{ x=>
-        println(new String(x.bytes))
-      }
-//      .map(x=>println(x))
-    app.unsafeRunSync()
-//    println("HELLOE")
+//    val app = initBC() >> pbkdf2IO
+//      .generatePassword(CipherXAlgorithms.AES,PBKDF2Algorithms.HMACSHA256,"hola",8,1000,256)
+//      .flatMap(key=>
+//        cipherXIO.encrypt("HOLA".getBytes,t1,key)
+//          .flatMap(cipherXIO.decrypt(_,t1,key))
+////          .map
+//      )
+//      .map{ x=>
+//        println(new String(x.bytes))
+//      }
+////      .map(x=>println(x))
+//    app.unsafeRunSync()
+////    println("HELLOE")
   }
 
 }

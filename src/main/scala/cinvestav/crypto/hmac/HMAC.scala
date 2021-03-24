@@ -10,7 +10,6 @@ import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms._
 import cinvestav.crypto.hmac.HMACAlgorithms.HMACAlgorithms
 import fs2.{Pipe, Stream}
 //import cinvestav.utils.formatters.FormattersDSL._
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import cinvestav.logger.LoggerX
 import cinvestav.logger.LoggerXDSL._
 import cinvestav.utils.formatters.Formatter
@@ -21,7 +20,6 @@ trait HMAC[F[_]]{
 }
 
 object HMACInterpreter {
-  implicit def unsafeLogger = Slf4jLogger.getLogger[IO]
 
 
   implicit val HMACIO: HMAC[IO] = new HMAC[IO] {

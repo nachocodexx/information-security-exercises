@@ -1,5 +1,5 @@
 import cats.data.{Chain, Writer, WriterT}
-import cats.effect.{IO, Timer}
+import cats.effect.IO
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,7 +14,7 @@ import cats.implicits._
  ******************************************************************************/
 
 class StopWatchSpec extends AnyFunSuite{
-  implicit val timer:Timer[IO] = IO.timer(global)
+//  implicit val timer:Timer[IO] = IO.timer(global)
   test("Measure the time"){
 //    val t5 = Timer[IO].sleep(5 seconds).map(_=>1)
 //    val t10 = Timer[IO].sleep(10 seconds).map(_=>2)

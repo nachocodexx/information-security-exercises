@@ -1,4 +1,5 @@
 import cats.effect.IO
+import cats.effect.unsafe.implicits.global
 import cinvestav.crypto.cipher.CipherX.{CipherText, Transformation}
 import cinvestav.crypto.cipher.enums.{CipherXAlgorithms, CipherXModel, CipherXPadding}
 import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms
@@ -48,23 +49,23 @@ class Pbkdf2Spec extends AnyFunSuite{
 //    val areEquals = key.sameElements(keyBytes)
 //    assert(areEquals)
 //    println(hex)
-    val cipherText = cipherXIO.encrypt(plaintext.getBytes,aesCBC,secretKey).unsafeRunSync()
-    val plain      = cipherXIO.decrypt(cipherText,aesCBC,secretKey).unsafeRunSync()
-    val iv = cipherText.params.map(_.getEncoded).getOrElse(Array.empty[Byte])
-    println(s"IV: ${iv.size}")
+//    val cipherText = cipherXIO.encrypt(plaintext.getBytes,aesCBC,secretKey).unsafeRunSync()
+//    val plain      = cipherXIO.decrypt(cipherText,aesCBC,secretKey).unsafeRunSync()
+//    val iv = cipherText.params.map(_.getEncoded).getOrElse(Array.empty[Byte])
+//    println(s"IV: ${iv.size}")
 //    val ivv = new IvParameterSpec(iv)
-    println(utilsIO.toHex(iv))
-    val text = new String(plain.bytes,"UTF8")
-
-    val params = AlgorithmParameters.getInstance("AES")
-    params.init(iv)
-    val cipherText2  = CipherText(plain.bytes,Some(params),None,None)
-    val plain2 = cipherXIO.decrypt(cipherText,aesCBC,secretKey).unsafeRunSync()
-    val text2  =  new String(plain2.bytes,"UTF8")
-    println(plain2)
-    println(text2)
-    println(text)
-    println(plain)
+//    println(utilsIO.toHex(iv))
+//    val text = new String(plain.bytes,"UTF8")
+//
+//    val params = AlgorithmParameters.getInstance("AES")
+//    params.init(iv)
+//    val cipherText2  = CipherText(plain.bytes,Some(params),None,None)
+//    val plain2 = cipherXIO.decrypt(cipherText,aesCBC,secretKey).unsafeRunSync()
+//    val text2  =  new String(plain2.bytes,"UTF8")
+//    println(plain2)
+//    println(text2)
+//    println(text)
+//    println(plain)
 //    println(plain.bytes)
 //    println(utilsIO.toHex(cipherText))
 //    val plainText2 = cipherXIO.decrypt(cipherText,desCBC,secretKey).unsafeRunSync()

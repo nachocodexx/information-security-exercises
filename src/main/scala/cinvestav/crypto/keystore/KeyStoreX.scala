@@ -8,7 +8,7 @@ package cinvestav.crypto.keystore
 
 import cats.data.OptionT
 import cats.implicits._
-import cats.effect.{ContextShift, ExitCode, IO, Resource, Timer}
+import cats.effect.{ IO, Resource}
 import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
 import cinvestav.crypto.keystore.enums.KeyStoreXTypes.KeyStoreXTypes
 import cinvestav.logger.LoggerX
@@ -31,12 +31,10 @@ import cinvestav.crypto.keystore.enums.KeyStoreXTypes
 object KeyStoreX {
   trait KeyStoreX[F[_]]{
     def createKeyStore(keyStoreXType: KeyStoreXTypes,password:String,name:Option[String]):F[Unit]
-    def loadKeyStore(keyStoreXType: KeyStoreXTypes,password:String,name:Option[String])(implicit
-                                                                                        cs:ContextShift[IO],
-                                                                                        timer:Timer[IO]):OptionT[F, KeyStore]
+    def loadKeyStore(keyStoreXType: KeyStoreXTypes,password:String,name:Option[String]):OptionT[F, KeyStore]
     def saveSecretKey(ks:KeyStore,keyx:KeyX,password:String):F[Unit]
     def getSecretKey(ks:KeyStore,alias:String,pass:KeyStore.PasswordProtection):OptionT[F,KeyStore.Entry]
-    def getSecretKeyFromDefaultKeyStore(alias:String)(implicit  cs:ContextShift[F],timer:Timer[F]):OptionT[F,KeyStore
+    def getSecretKeyFromDefaultKeyStore(alias:String):OptionT[F,KeyStore
     .Entry]
     def passwordFromString(password:String):F[(Array[Char],KeyStore.PasswordProtection)]
   }
@@ -83,10 +81,7 @@ object KeyStoreXDSL {
       } yield ()
     }
 
-    override def loadKeyStore(keyStoreXType: KeyStoreXTypes, password: String, name: Option[String])
-                             (implicit cs:ContextShift[IO],timer: Timer[IO])
-    : OptionT[IO,
-      KeyStore] = {
+    override def loadKeyStore(keyStoreXType: KeyStoreXTypes, password: String, name: Option[String]):OptionT[IO, KeyStore] = {
       val L = implicitly[LoggerX[IO]]
 
       val response =
@@ -117,7 +112,7 @@ object KeyStoreXDSL {
       } yield sk
       OptionT[IO,KeyStore.Entry](x)
     }
-    override def getSecretKeyFromDefaultKeyStore(alias: String)(implicit cs:ContextShift[IO],timer:Timer[IO])
+    override def getSecretKeyFromDefaultKeyStore(alias: String)
     : OptionT[IO, KeyStore.Entry] = for {
         ks              <- loadKeyStore(KeyStoreXTypes.JCEKS,"password",Some("default"))
         (_,password)    <- OptionT.liftF(passwordFromString("password"))

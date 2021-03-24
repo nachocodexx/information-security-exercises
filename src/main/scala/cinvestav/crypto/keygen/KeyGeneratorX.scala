@@ -21,6 +21,7 @@ object KeyGeneratorX{
     def generateKey(algorithms: KeyGeneratorAlgorithms):F[Key]
     def generateKeyEntry(password:String,keyGeneratorAlgorithms: KeyGeneratorAlgorithms):F[KeyStore.SecretKeyEntry]
     def generateRandomKey(algorithms: KeyGeneratorAlgorithms):F[Key]
+    def keyPairGenerator(algorithms: KeyGeneratorAlgorithms)
   }
 }
 
@@ -51,9 +52,4 @@ object KeyGeneratorXDSL {
         key           <- generator.generateKey().pure[IO]
     } yield key
 
-//    override def generateKeyByPassword(password: String): IO[Array[Byte]] = for {
-//
-//      result <- IO(Array.empty[Byte])
-//    } yield result
-  }
 }

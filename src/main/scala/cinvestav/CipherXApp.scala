@@ -6,7 +6,6 @@
 
 package cinvestav
 
-import cats.effect.IO.contextShift
 import cats.implicits._
 import cats.effect.{ExitCode, IO, IOApp}
 import cinvestav.config.DefaultConfig

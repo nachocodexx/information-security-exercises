@@ -7,13 +7,12 @@
 package cinvestav
 
 import cats.implicits._
-import cats.effect.{Blocker, Clock, ContextShift, ExitCode, IO, IOApp, Sync, Timer}
+import cats.effect.{Clock,ExitCode, IO, IOApp, Sync}
 import cinvestav.crypto.cipher.CipherX.{CipherX, Transformation}
 import cinvestav.utils.files.FilesOps
 import cinvestav.utils.files.FilesOpsInterpreter.filesOpsIO
 import cinvestav.utils.stopwatch.StopWatch
 import fs2.Stream
-import fs2.io.file.writeAll
 import fs2.text.utf8Encode
 
 import scala.concurrent.duration._
@@ -39,42 +38,41 @@ object PBKDF2App{
   val aesECB = Transformation(CipherXAlgorithms.AES,CipherXModel.ECB,CipherXPadding.PKCS5PADDING)
   val aesCBC= Transformation(CipherXAlgorithms.AES,CipherXModel.CBC,CipherXPadding.PKCS5PADDING)
 //  def task5Seconds[F[_]:Sync](): F[String] = timer.sleep(5 seconds) *> "SHAS".pure[F]
-  def program[F[_]:Sync]()(implicit KDF:PBKDF2X[F],CX:CipherX[F],SW:StopWatch[F], FO:FilesOps[F],T:Timer[F],
-                           C:ContextShift[F],U:Utils[F])
-  :F[Unit]=
-    Blocker[F]
-    .use {
-    blocker =>
-    FO.directoryToBytesAndFilename(blocker,"/home/nacho/Documents/test/test")
-      .evalMap { plainText =>
-        val saltBytes  = 100
-        val iterations = 100
-        val keyLen     = 64
-        KDF.generatePassword(CipherXAlgorithms.DES, HMACSHA1, "topsecret", saltBytes, iterations, keyLen)
-          .map(x => (plainText, x))
-      }
-      .evalMap{
-        case (fileInfo, secretKey) =>
-          SW.measure(CX.encrypt(fileInfo.bytes,desECB,secretKey),MILLISECONDS)
-              .map{
-                case (text, l) => (text,l,fileInfo)
-              }
-      }
-      .evalMap{
-        case (cipherText, time,fileInfo) =>
-          val hex            = U.toHex(cipherText.value)
-          val iv             = cipherText.params.map(_.getEncoded).map(U.toHex).getOrElse("")
-          val algorithms     = cipherText.algorithm.getOrElse("")
-          val cipherTextSize = cipherText.size.getOrElse(0L).toString
-          Sync[F].pure(s"${fileInfo.name},${fileInfo.size},$hex,$iv,$algorithms,$cipherTextSize,$time")
-      }
-//      .debug()
-      .intersperse("\n")
-      .through(utf8Encode)
-      .through(writeAll(Paths.get( "/home/nacho/Programming/Python/cinvestav/src/DataAnalysis/LAB-01/des_cbc.csv"),blocker))
-      .compile
-      .drain
-  }
+//  def program[F[_]:Sync]()(implicit KDF:PBKDF2X[F],CX:CipherX[F],SW:StopWatch[F], FO:FilesOps[F],U:Utils[F])
+//  :F[Unit]=
+//    Blocker[F]
+//    .use {
+//    blocker =>
+//    FO.directoryToBytesAndFilename(blocker,"/home/nacho/Documents/test/test")
+//      .evalMap { plainText =>
+//        val saltBytes  = 100
+//        val iterations = 100
+//        val keyLen     = 64
+//        KDF.generatePassword(CipherXAlgorithms.DES, HMACSHA1, "topsecret", saltBytes, iterations, keyLen)
+//          .map(x => (plainText, x))
+//      }
+//      .evalMap{
+//        case (fileInfo, secretKey) =>
+//          SW.measure(CX.encrypt(fileInfo.bytes,desECB,secretKey),MILLISECONDS)
+//              .map{
+//                case (text, l) => (text,l,fileInfo)
+//              }
+//      }
+//      .evalMap{
+//        case (cipherText, time,fileInfo) =>
+//          val hex            = U.toHex(cipherText.value)
+//          val iv             = cipherText.params.map(_.getEncoded).map(U.toHex).getOrElse("")
+//          val algorithms     = cipherText.algorithm.getOrElse("")
+//          val cipherTextSize = cipherText.size.getOrElse(0L).toString
+//          Sync[F].pure(s"${fileInfo.name},${fileInfo.size},$hex,$iv,$algorithms,$cipherTextSize,$time")
+//      }
+////      .debug()
+//      .intersperse("\n")
+//      .through(utf8Encode)
+//      .through(writeAll(Paths.get( "/home/nacho/Programming/Python/cinvestav/src/DataAnalysis/LAB-01/des_cbc.csv"),blocker))
+//      .compile
+//      .drain
+//  }
 //    FO.directoryToBytes()
 //  override def run(args: List[String]): IO[ExitCode] =
 //    program[IO]()
