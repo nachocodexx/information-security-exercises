@@ -10,8 +10,9 @@ import cats.effect.IO
 import cats.implicits._
 import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
 import cinvestav.crypto.keygen.enums.SecretKeyAlgorithms.SecretKeyAlgorithms
+import cinvestav.crypto.providers.ProviderX.ProviderX
 
-import java.security.{Key, KeyStore, SecureRandom}
+import java.security.{Key, KeyPair, KeyPairGenerator, KeyStore, SecureRandom}
 import javax.crypto.KeyGenerator
 import javax.crypto.spec.SecretKeySpec
 
@@ -21,14 +22,15 @@ object KeyGeneratorX{
     def generateKey(algorithms: KeyGeneratorAlgorithms):F[Key]
     def generateKeyEntry(password:String,keyGeneratorAlgorithms: KeyGeneratorAlgorithms):F[KeyStore.SecretKeyEntry]
     def generateRandomKey(algorithms: KeyGeneratorAlgorithms):F[Key]
-    def keyPairGenerator(algorithms: KeyGeneratorAlgorithms)
+    def keyPairGenerator(algorithms: KeyGeneratorAlgorithms,provider:Option[ProviderX]):F[KeyPair]
   }
 }
 
 object KeyGeneratorXDSL {
+
   import KeyGeneratorX._
 
-  implicit  val keyGeneratorXIO: KeyGeneratorX[IO] = new KeyGeneratorX[IO] {
+  implicit val keyGeneratorXIO: KeyGeneratorX[IO] = new KeyGeneratorX[IO] {
     override def getInstance(algorithms: KeyGeneratorAlgorithms): IO[KeyGenerator] = IO(
       KeyGenerator.getInstance(algorithms.toString)
     )
@@ -38,18 +40,24 @@ object KeyGeneratorXDSL {
       key <- generator.generateKey().pure[IO]
     } yield key
 
-    override def generateKeyEntry(password: String,keyGeneratorAlgorithms: KeyGeneratorAlgorithms): IO[KeyStore.SecretKeyEntry] = {
+    override def generateKeyEntry(password: String, keyGeneratorAlgorithms: KeyGeneratorAlgorithms): IO[KeyStore.SecretKeyEntry] = {
       generateKey(keyGeneratorAlgorithms)
-        .map(key => new SecretKeySpec(key.getEncoded,keyGeneratorAlgorithms.toString))
+        .map(key => new SecretKeySpec(key.getEncoded, keyGeneratorAlgorithms.toString))
         .map(new KeyStore.SecretKeyEntry(_))
     }
 
     override def generateRandomKey(algorithms: KeyGeneratorAlgorithms): IO[Key] =
       for {
-        generator     <- getInstance(algorithms)
-        secureRandom  <- IO(new SecureRandom())
-        _             <- generator.init(secureRandom).pure[IO]
-        key           <- generator.generateKey().pure[IO]
-    } yield key
+        generator <- getInstance(algorithms)
+        secureRandom <- IO(new SecureRandom())
+        _ <- generator.init(secureRandom).pure[IO]
+        key <- generator.generateKey().pure[IO]
+      } yield key
 
+    override def keyPairGenerator(algorithms: KeyGeneratorAlgorithms, provider: Option[ProviderX]): IO[KeyPair] =
+      for {
+        keypairGen  <- KeyPairGenerator.getInstance(algorithms.toString,provider.getOrElse("SunJCE").toString).pure[IO]
+        _           <- keypairGen.initialize().pure[IO]
+      } yield ???
+  }
 }

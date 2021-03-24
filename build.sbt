@@ -42,7 +42,8 @@ lazy val root = (project in file(".")).settings(
 //    ScalaMeter,
     ScalaTest,
     Scalatic
-  )
+  ),
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 
 )
 enablePlugins(JavaAppPackaging)
