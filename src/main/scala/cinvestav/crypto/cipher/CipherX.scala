@@ -1,5 +1,6 @@
 package cinvestav.crypto.cipher
 
+import cats.effect.std.Console
 import cats.Show
 import cats.data.OptionT
 import cats.implicits._
@@ -10,14 +11,12 @@ import cinvestav.crypto.cipher.enums.CipherXMode.CipherXMode
 import cinvestav.crypto.cipher.enums.CipherXModel.CipherXModel
 import cinvestav.crypto.cipher.enums.CipherXPadding.CipherXPadding
 import cinvestav.crypto.keystore.KeyStoreX.KeyStoreX
-import cinvestav.crypto.keystore.enums.KeyStoreXTypes
 import cinvestav.crypto.providers.ProviderX.ProviderX
 import cinvestav.logger.LoggerX
 import fs2.Pipe
-import cats.effect.std.Console
+import cinvestav.crypto.providers.ProviderX
 
 import java.security.{AlgorithmParameters, KeyStore}
-import javax.crypto.spec.IvParameterSpec
 import javax.crypto.{Cipher, SecretKey}
 
 object CipherX {
@@ -35,9 +34,11 @@ object CipherX {
     def cipher(mode:CipherXMode.CipherXMode,xs: Array[Byte], transformation: Transformation, secretKey:SecretKey,
                providerX: Option[ProviderX])
     :F[CipherText]
-    def encrypt(xs:Array[Byte],transformation: Transformation,secretKey: SecretKey,provider:Option[ProviderX])
+    def encrypt(xs:Array[Byte],transformation: Transformation,secretKey: SecretKey,provider:Option[ProviderX]=Some
+    (ProviderX.BouncyCastle))
     :F[CipherText]
-    def decrypt(cipherText:CipherText,transformation: Transformation,secretKey: SecretKey,providerX: Option[ProviderX])
+    def decrypt(cipherText:CipherText,transformation: Transformation,secretKey: SecretKey,
+                providerX: Option[ProviderX]=Some(ProviderX.BouncyCastle))
     :F[PlainText]
     def encryptUsingKeyAlias[A](xs:Array[Byte],alias:String,transformation: Transformation)
                                (implicit KS:KeyStoreX[F]):F[Option[CipherText]]
@@ -97,6 +98,7 @@ object CipherXDSL {
         _              <- cipher.init(mode.id,secretKey,params).pure[IO]
         bytes          <- cipher.doFinal(xs).pure[IO]
         result         <- CipherText(bytes,Option(params),Some(transformation.show),Some(bytes.size)).pure[IO]
+//        _              <- cipher.
       } yield result
 
   }

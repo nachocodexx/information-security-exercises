@@ -17,5 +17,6 @@ object KeyGeneratorAlgorithms extends Enumeration {
   val HmacSHA384 = Value("HmacSHA384")
   val HmacSHA512 = Value("HmacSHA512")
   val DSA        = Value("DSA")
-
+  val RSA        = Value("RSA")
+  val EC         = Value("EC")
 }

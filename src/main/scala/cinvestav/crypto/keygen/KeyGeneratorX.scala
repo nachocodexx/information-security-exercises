@@ -10,7 +10,8 @@ import cats.effect.IO
 import cats.implicits._
 import cinvestav.crypto.keygen.enums.KeyGeneratorAlgorithms.KeyGeneratorAlgorithms
 import cinvestav.crypto.keygen.enums.SecretKeyAlgorithms.SecretKeyAlgorithms
-import cinvestav.crypto.providers.ProviderX.ProviderX
+import cinvestav.crypto.keygen.enums.SecurityLevelsX.SecurityLevelX
+import cinvestav.crypto.providers.ProviderX.{BouncyCastle, ProviderX}
 
 import java.security.{Key, KeyPair, KeyPairGenerator, KeyStore, SecureRandom}
 import javax.crypto.KeyGenerator
@@ -22,7 +23,9 @@ object KeyGeneratorX{
     def generateKey(algorithms: KeyGeneratorAlgorithms):F[Key]
     def generateKeyEntry(password:String,keyGeneratorAlgorithms: KeyGeneratorAlgorithms):F[KeyStore.SecretKeyEntry]
     def generateRandomKey(algorithms: KeyGeneratorAlgorithms):F[Key]
-    def keyPairGenerator(algorithms: KeyGeneratorAlgorithms,provider:Option[ProviderX]):F[KeyPair]
+    def keyPairGenerator(securityLvl:SecurityLevelX, algorithms: KeyGeneratorAlgorithms,
+                         provider:Option[ProviderX]=Some(BouncyCastle))
+    :F[KeyPair]
   }
 }
 
@@ -54,10 +57,10 @@ object KeyGeneratorXDSL {
         key <- generator.generateKey().pure[IO]
       } yield key
 
-    override def keyPairGenerator(algorithms: KeyGeneratorAlgorithms, provider: Option[ProviderX]): IO[KeyPair] =
+    override def keyPairGenerator(securityLevelX: SecurityLevelX,algorithms: KeyGeneratorAlgorithms, provider: Option[ProviderX]): IO[KeyPair] =
       for {
         keypairGen  <- KeyPairGenerator.getInstance(algorithms.toString,provider.getOrElse("SunJCE").toString).pure[IO]
-        _           <- keypairGen.initialize().pure[IO]
-      } yield ???
+        _           <- keypairGen.initialize(securityLevelX.toString.toInt).pure[IO]
+      } yield keypairGen.generateKeyPair()
   }
 }

@@ -12,6 +12,8 @@ object CipherXAlgorithms extends Enumeration {
   val AES:CipherXAlgorithm = Value("AES")
   val DES:CipherXAlgorithm= Value("DES")
   val DES3:CipherXAlgorithm = Value("DESede")
+  val RSA:CipherXAlgorithm = Value("RSA")
+  val EC:CipherXAlgorithm = Value("EC")
 
   def fromString(x:String)= Value(x)
 }

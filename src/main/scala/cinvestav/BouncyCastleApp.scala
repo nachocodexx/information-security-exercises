@@ -20,7 +20,7 @@ import cats.effect.std.Console
 import cinvestav.crypto.hashfunction.enums.MessageDigestAlgorithms
 import cinvestav.crypto.providers.ProviderX
 
-object BouncyCastle extends IOApp{
+object BouncyCastleApp extends IOApp{
   def initBC():IO[Unit] = IO(
     Security.addProvider(new BouncyCastleProvider())
   )
